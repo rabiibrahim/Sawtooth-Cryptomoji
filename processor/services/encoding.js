@@ -29,7 +29,7 @@ const encode = object => {
  */
 const decode = buffer => {
   // Your code here
-  return JSON.parse(Buffer.from(base64Str, "base64").toString());
+  return JSON.parse(buffer.toString());
 };
 
 module.exports = {

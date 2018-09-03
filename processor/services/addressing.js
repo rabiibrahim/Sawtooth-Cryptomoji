@@ -2,7 +2,7 @@
 
 const { createHash } = require('crypto');
 const hash = str => createHash('sha512').update(str).digest('hex');
- 
+
 
 const NAMESPACE = '5f4d76';
 const PREFIXES = {
@@ -36,9 +36,9 @@ const getCollectionAddress = publicKey => {
 const getMojiAddress = (ownerKey, dna) => {
   // Your code here
   return NAMESPACE +
-  PREFIXES.MOJI +
-  hash(ownerKey).slice(0, 8) +
-  hash(dna).slice(0, 54);
+    PREFIXES.MOJI +
+    hash(ownerKey).slice(0, 8) +
+    hash(dna).slice(0, 54);
 
 };
 
@@ -81,7 +81,10 @@ const getOfferAddress = (ownerKey, addresses) => {
  */
 const isValidAddress = address => {
   // Your code here
+  if (!address || address.length !== 70 || address.slice(0, 6) === NAMESPACE)
+    return false;
 
+  return true;
 };
 
 module.exports = {

@@ -39,11 +39,11 @@ export const createTransaction = (privateKey, payload) => {
     outputs: [NAMESPACE],
     signerPublicKey: publicKey,
     batcherPublicKey: publicKey,
-    nonce:randomBytes(32).toString(),
+    nonce: randomBytes(32).toString(),
     dependencies: [],
     payloadSha512: hash(encodedPayload)
   }).finish();
-  const signature = sign(privateKey, payload);
+  const signature = sign(privateKey, transactionHeaderBytess);
   const transaction = Transaction.create({
     header: transactionHeaderBytes,
     headerSignature: signature,
@@ -61,6 +61,11 @@ export const createTransaction = (privateKey, payload) => {
  */
 export const createBatch = (privateKey, transactions) => {
   // Your code here
+  const publicKey = getPublicKey(privateKey);
+  const batchHeaderBytes = BatchHeader.encode({
+    signerPublicKey: publicKey,
+    transactionIds: transactions.map((txn) => txn.headerSignature),
+  }).finish()
 
 };
 
