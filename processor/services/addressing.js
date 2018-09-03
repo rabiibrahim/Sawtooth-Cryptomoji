@@ -1,7 +1,8 @@
 'use strict';
 
 const { createHash } = require('crypto');
-
+const hash = str => createHash('sha512').update(str).digest('hex');
+ 
 
 const NAMESPACE = '5f4d76';
 const PREFIXES = {
@@ -25,7 +26,7 @@ const PREFIXES = {
  */
 const getCollectionAddress = publicKey => {
   // Enter your solution here
-
+  return (NAMESPACE + PREFIXES.COLLECTION + hash(publicKey)).slice(0, 70);
 };
 
 /**
@@ -34,6 +35,10 @@ const getCollectionAddress = publicKey => {
  */
 const getMojiAddress = (ownerKey, dna) => {
   // Your code here
+  return NAMESPACE +
+  PREFIXES.MOJI +
+  hash(ownerKey).slice(0, 8) +
+  hash(dna).slice(0, 54);
 
 };
 
@@ -43,7 +48,7 @@ const getMojiAddress = (ownerKey, dna) => {
  */
 const getSireAddress = ownerKey => {
   // Your code here
-
+  return (NAMESPACE + PREFIXES.SIRE_LISTING + hash(ownerKey)).slice(0, 70);
 };
 
 /**

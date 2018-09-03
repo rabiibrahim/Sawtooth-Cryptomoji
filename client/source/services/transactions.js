@@ -5,9 +5,10 @@ import {
   BatchHeader,
   BatchList
 } from 'sawtooth-sdk/protobuf';
-import { createHash } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import { getPublicKey, sign } from './signing.js';
 import { encode } from './encoding.js';
+import { hash } from './addressing.js';
 
 
 const FAMILY_NAME = 'cryptomoji';
@@ -29,7 +30,26 @@ const NAMESPACE = '5f4d76';
  */
 export const createTransaction = (privateKey, payload) => {
   // Enter your solution here
-
+  const encodedPayload = encode(payload);
+  const publicKey = getPublicKey(privateKey);
+  const transactionHeaderBytes = TransactionHeader.encode({
+    familyName: FAMILY_NAME,
+    familyVersion: FAMILY_VERSION,
+    inputs: [NAMESPACE],
+    outputs: [NAMESPACE],
+    signerPublicKey: publicKey,
+    batcherPublicKey: publicKey,
+    nonce:randomBytes(32).toString(),
+    dependencies: [],
+    payloadSha512: hash(encodedPayload)
+  }).finish();
+  const signature = sign(privateKey, payload);
+  const transaction = Transaction.create({
+    header: transactionHeaderBytes,
+    headerSignature: signature,
+    payload: encodedPayload
+  });
+  return transaction;
 };
 
 /**
@@ -54,7 +74,7 @@ export const createBatch = (privateKey, transactions) => {
  */
 export const encodeBatches = batches => {
   if (!Array.isArray(batches)) {
-    batches = [ batches ];
+    batches = [batches];
   }
   const batchList = BatchList.encode({ batches }).finish();
 

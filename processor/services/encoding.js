@@ -17,6 +17,9 @@
  */
 const encode = object => {
   // Enter your solution here
+  const sortedKeys = Object.keys(object).sort();
+  var encoded = Buffer.from(JSON.stringify(object, sortedKeys));
+  return encoded;
 
 };
 
@@ -26,7 +29,7 @@ const encode = object => {
  */
 const decode = buffer => {
   // Your code here
-
+  return JSON.parse(Buffer.from(base64Str, "base64").toString());
 };
 
 module.exports = {

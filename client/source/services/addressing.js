@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 
 
-const hash = str => createHash('sha512').update(str).digest('hex');
+export const hash = str => createHash('sha512').update(str).digest('hex');
 
 
 const NAMESPACE = '5f4d76';
