@@ -71,10 +71,10 @@ export const createBatch = (privateKey, transactions) => {
 
   }
 
-  function isArray (value) {
+  function isArray(value) {
     return value && typeof value === 'object' && value.constructor === Array;
-    }
-    
+  }
+
   const publicKey = getPublicKey(privateKey);
   const batchHeaderBytes = BatchHeader.encode({
     signerPublicKey: publicKey,
@@ -120,5 +120,6 @@ export const encodeBatches = batches => {
  */
 export const encodeAll = (privateKey, payloads) => {
   // Your code here
+  return encodeBatches(createBatch(privateKey, createTransaction(privateKey, payloads)));
 
 };
