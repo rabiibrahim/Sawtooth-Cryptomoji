@@ -1,6 +1,9 @@
 import { createHash } from 'crypto';
 
 
+const hash = str => createHash('sha512').update(str).digest('hex');
+
+
 const NAMESPACE = '5f4d76';
 const PREFIXES = {
   COLLECTION: '00',
@@ -26,7 +29,11 @@ const PREFIXES = {
  */
 export const getCollectionAddress = (publicKey = null) => {
   // Enter your solution here
+  if (!publicKey) {
+    return NAMESPACE + PREFIXES.COLLECTION;
+  }
 
+  return (NAMESPACE + PREFIXES.COLLECTION + hash(publicKey)).slice(0, 70);
 };
 
 /**
@@ -43,6 +50,18 @@ export const getCollectionAddress = (publicKey = null) => {
  */
 export const getMojiAddress = (ownerKey = null, dna = null) => {
   // Your code here
+  if (ownerKey && dna) {
+    return NAMESPACE +
+      PREFIXES.MOJI +
+      hash(ownerKey).slice(0, 8) +
+      hash(dna).slice(0, 54);
+
+  }
+  if (ownerKey && !dna) {
+    return NAMESPACE + PREFIXES.MOJI + hash(ownerKey).slice(0, 8);
+  }
+
+  return NAMESPACE + PREFIXES.MOJI;
 
 };
 
@@ -55,6 +74,11 @@ export const getMojiAddress = (ownerKey = null, dna = null) => {
  */
 export const getSireAddress = (ownerKey = null) => {
   // Your code here
+  if (!ownerKey) {
+    return NAMESPACE + PREFIXES.SIRE_LISTING;
+  }
+
+  return (NAMESPACE + PREFIXES.SIRE_LISTING + hash(ownerKey)).slice(0, 70);
 
 };
 
@@ -72,5 +96,20 @@ export const getSireAddress = (ownerKey = null) => {
  */
 export const getOfferAddress = (ownerKey = null, moji = null) => {
   // Your code here
+  if (ownerKey && dna) {
+    return NAMESPACE +
+      PREFIXES.OFFER +
+      hash(ownerKey).slice(0, 8) +
+      hash(dna).slice(0, 54);
+
+  }
+  if (ownerKey && !dna) {
+    return (NAMESPACE + PREFIXES.MOJI + hash(ownerKey)).slice(0, 70);
+  }
+  if (!ownerKey && dna) {
+    return (NAMESPACE + PREFIXES.MOJI + hash(dna)).slice(0, 70);
+  }
+
+  return NAMESPACE + PREFIXES.MOJI;
 
 };
