@@ -43,7 +43,8 @@ export const createTransaction = (privateKey, payload) => {
     dependencies: [],
     payloadSha512: hash(encodedPayload)
   }).finish();
-  const signature = sign(privateKey, transactionHeaderBytess);
+
+  const signature = sign(privateKey, transactionHeaderBytes);
   const transaction = Transaction.create({
     header: transactionHeaderBytes,
     headerSignature: signature,
@@ -61,12 +62,32 @@ export const createTransaction = (privateKey, payload) => {
  */
 export const createBatch = (privateKey, transactions) => {
   // Your code here
+  let trx;
+  if (isArray(transactions)) {
+    trx = transactions;
+  } else {
+    trx = [];
+    trx.push(transactions);
+
+  }
+
+  function isArray (value) {
+    return value && typeof value === 'object' && value.constructor === Array;
+    }
+    
   const publicKey = getPublicKey(privateKey);
   const batchHeaderBytes = BatchHeader.encode({
     signerPublicKey: publicKey,
-    transactionIds: transactions.map((txn) => txn.headerSignature),
-  }).finish()
+    transactionIds: trx.map((txn) => txn.headerSignature),
+  }).finish();
 
+  const signature = sign(privateKey, batchHeaderBytes);
+
+  return Batch.create({
+    header: batchHeaderBytes,
+    headerSignature: signature,
+    transactions: trx
+  });
 };
 
 /**
