@@ -15,7 +15,9 @@
  */
 export const encode = object => {
   // Enter your solution here
-
+  const sortedKeys = Object.keys(object).sort();
+  var encoded = Buffer.from(JSON.stringify(object, sortedKeys));
+  return encoded;
 };
 
 /**
@@ -26,8 +28,11 @@ export const encode = object => {
  *   Although state is encoded as a Buffer, the REST API will send
  *   any binary data as a base64 string. You will need to go from
  *   base64 string -> Buffer -> JSON string -> object
+ * 
  */
 export const decode = base64Str => {
   // Your code here
-
+  return JSON.parse(Buffer.from(base64Str, "base64").toString());
 };
+
+
