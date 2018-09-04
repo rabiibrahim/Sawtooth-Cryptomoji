@@ -96,20 +96,25 @@ export const getSireAddress = (ownerKey = null) => {
  */
 export const getOfferAddress = (ownerKey = null, moji = null) => {
   // Your code here
-  if (ownerKey && dna) {
-    return NAMESPACE +
-      PREFIXES.OFFER +
-      hash(ownerKey).slice(0, 8) +
-      hash(dna).slice(0, 54);
-
+  if (ownerKey === null) {
+    return NAMESPACE + PREFIXES.OFFER;
   }
-  if (ownerKey && !dna) {
-    return (NAMESPACE + PREFIXES.MOJI + hash(ownerKey)).slice(0, 70);
-  }
-  if (!ownerKey && dna) {
-    return (NAMESPACE + PREFIXES.MOJI + hash(dna)).slice(0, 70);
+  if (moji === null) {
+    return NAMESPACE + PREFIXES.OFFER + hash(ownerKey).slice(0, 8);
   }
 
-  return NAMESPACE + PREFIXES.MOJI;
+  if (!Array.isArray(moji)) {
+    moji = [moji];
+  }
+
+  const addresses = moji.map(addressOrDna => {
+    if (addressOrDna.length === 70) {
+      return addressOrDna;
+    }
+
+    return getMojiAddress(ownerKey, addressOrDna);
+  });
+
+  return NAMESPACE + PREFIXES.OFFER + hash(ownerKey).slice(0, 8) + hash(addresses.sort().join(''), 54);
 
 };

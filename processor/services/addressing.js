@@ -81,11 +81,11 @@ const getOfferAddress = (ownerKey, addresses) => {
  */
 const isValidAddress = address => {
   // Your code here
-  if (!address || address.length !== 70 || address.slice(0, 6) === NAMESPACE)
-    return false;
+  const pattern = `^${NAMESPACE}[0-9a-f]{64}$`;
 
-  return true;
+  return new RegExp(pattern).test(address);
 };
+
 
 module.exports = {
   getCollectionAddress,

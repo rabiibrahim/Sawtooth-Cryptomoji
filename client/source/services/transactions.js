@@ -62,23 +62,13 @@ export const createTransaction = (privateKey, payload) => {
  */
 export const createBatch = (privateKey, transactions) => {
   // Your code here
-  let trx;
-  if (isArray(transactions)) {
-    trx = transactions;
-  } else {
-    trx = [];
-    trx.push(transactions);
-
+  if (!Array.isArray(transactions)) {
+    transactions = [transactions];
   }
-
-  function isArray(value) {
-    return value && typeof value === 'object' && value.constructor === Array;
-  }
-
   const publicKey = getPublicKey(privateKey);
   const batchHeaderBytes = BatchHeader.encode({
     signerPublicKey: publicKey,
-    transactionIds: trx.map((txn) => txn.headerSignature),
+    transactionIds: transactions.map((txn) => txn.headerSignature),
   }).finish();
 
   const signature = sign(privateKey, batchHeaderBytes);
@@ -86,7 +76,7 @@ export const createBatch = (privateKey, transactions) => {
   return Batch.create({
     header: batchHeaderBytes,
     headerSignature: signature,
-    transactions: trx
+    transactions: transactions
   });
 };
 
@@ -120,6 +110,13 @@ export const encodeBatches = batches => {
  */
 export const encodeAll = (privateKey, payloads) => {
   // Your code here
-  return encodeBatches(createBatch(privateKey, createTransaction(privateKey, payloads)));
+  if (!Array.isArray(payloads)) {
+    payloads = [ payloads ];
+  }
+
+  const transactions = payloads.map(p => createTransaction(privateKey, p));
+  const batch = createBatch(privateKey, transactions);
+
+  return encodeBatches(batch);
 
 };
