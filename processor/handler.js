@@ -3,13 +3,16 @@
 const { TransactionHandler } = require('sawtooth-sdk/processor/handler');
 const { InvalidTransaction } = require('sawtooth-sdk/processor/exceptions');
 const { encode, decode } = require('./services/encoding');
-const { getCollectionAddress } = require('./services/addressing');
-
+const { getSireAddress, getCollectionAddress, getMojiAddress } = require('./services/addressing');
+const getPrng = require('./services/prng');
 const FAMILY_NAME = 'cryptomoji';
 const FAMILY_VERSION = '0.1';
 const NAMESPACE = '5f4d76';
 const ACTIONS = {
   CREATE_OWNER: 'CREATE_OWNER',
+  CREATE_COLLECTION: 'CREATE_COLLECTION',
+  SELECT_SIRE: 'SELECT_SIRE',
+  BREED_MOJI: 'BREED_MOJI'
 };
 
 /**
@@ -61,21 +64,77 @@ class MojiHandler extends TransactionHandler {
     switch (decodedPayload.action) {
       case ACTIONS.CREATE_OWNER:
         return createOwner(context, payload, txn.header.signerPublicKey);
+      case ACTIONS.CREATE_COLLECTION:
+        return createCollection(context, txn.header.signerPublicKey, txn.signature);
+      case ACTIONS.SELECT_SIRE:
+      return selectSire(context, txn.header.signerPublicKey);
+      case ACTIONS.BREED_MOJI:
       default:
         throw new InvalidTransaction('unknown action' + decodedPayload.action);
     }
   }
 }
 
-const createOwner = (context, { name }, publicKey) => {
-  const address = getCollectionAddress(publicKey);
+
+
+const createOwner = (context, { name }, ownerKey) => {
+  const address = getSireAddress(ownerKey);
   return context.getState([address]).then(state => {
     if (state[address].length > 0) {
       throw new InvalidTransaction('Owner already exist');
     }
     const update = {};
-    update[address] = encode({ key: publicKey, name });
+    update[address] = encode({ key: ownerKey, name });
     return context.setState(update);
   });
 }
 module.exports = MojiHandler;
+
+// Creates an empty array of a certain size
+const emptyArray = size => Array.apply(null, Array(size));
+
+// Uses a PRNG function to generate a pseudo-random dna string
+const makeDna = prng => {
+  return emptyArray(9).map(() => {
+    const randomHex = prng(2 ** (2 * 8)).toString(16);
+    return ('0000' + randomHex).slice(-4);
+  }).join('');
+};
+
+// Creates an array of new moji objects from a public key and a PRNG
+const makeMoji = (publicKey, prng) => {
+  return emptyArray(3).map(() => ({
+    dna: makeDna(prng),
+    owner: publicKey,
+    sire: null,
+    breeder: null,
+    sired: [],
+    bred: []
+  }));
+};
+
+const createCollection = (context, publicKey, signature) => {
+  const address = getCollectionAddress(publicKey);
+  const prng = getPrng(signature);
+
+  return context.getState([address]).then(state => {
+    if (state[address].length > 0) {
+      throw new InvalidTransaction('Collection already exist');
+    }
+    const updates = {};
+    const mojiAddresses = [];
+    const moji = makeMoji(publicKey, prng);
+
+    moji.forEach(moji => {
+      const address = getMojiAddress(publicKey, moji.dna);
+      updates[address] = encode(moji);
+      mojiAddresses.push(address);
+    });
+
+    updates[address] = encode({
+      key: publicKey,
+      moji: mojiAddresses.sort()
+    });
+    return context.setState(updates);
+  });
+}
