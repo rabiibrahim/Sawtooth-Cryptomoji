@@ -61,6 +61,8 @@ class MojiHandler extends TransactionHandler {
     } catch (err) {
       throw new InvalidTransaction('unable to decode payload');
     }
+    console.log(decodedPayload);
+
     switch (decodedPayload.action) {
       case ACTIONS.CREATE_OWNER:
         return createOwner(context, payload, txn.header.signerPublicKey);
